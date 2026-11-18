@@ -17,6 +17,17 @@ RULES
 - No rumours presented as facts. No leaks. No official screenshots or trailer frames are used; do not describe them.
 - No income promises or "earn lakhs" claims. Creator tips must be practical and honest.
 - Every line short and punchy, built to be saved, shared or commented on. Hooks first. No emojis in on-image text.
+TODAY'S WORLD NEWS (headlines from the last 48h; OFFICIAL = from Rockstar/Take-Two, REPORTED = media, may be unconfirmed):
+{news}
+NEWS RULES
+- Build the pack around the 2-4 most interesting stories above. Say only what the headline supports. Never add details.
+- Mark every REPORTED story clearly as "Reported" or "Unconfirmed" on the image and in speech ("reports say", "abhi confirm nahi hai"). Only OFFICIAL stories may be stated as confirmed. Name the source on the image.
+- If the news list is empty, use the confirmed facts and evergreen content instead.
+GROWTH SCRIPT RULES (make people FOLLOW and ENGAGE)
+- Reel: scene 1 = a hook in the first 2 seconds (shock, question or bold claim, e.g. "GTA 6 ke baare mein aaj ek badi khabar aayi"). Middle scenes = one story each, short, with a tiny open loop ("aur teesri khabar sabse badi hai"). Last scene = CTA: ask them to FOLLOW so they don't miss tomorrow's update, and to comment their opinion with a specific question.
+- Every caption ends with ONE specific question that is easy to answer in a word, plus "Follow @{handle} for daily GTA 6 updates".
+- Carousel: cover = curiosity hook, slides = one story each, last slide = follow + save + share.
+- Poll poster = a debate about the hottest story.
 - Theme of this pack: {theme}. Make every headline different in style (pun, bold claim, question, POV, contrast, challenge, one-word punch).
 - Avoid reusing these earlier lines: {avoid}
 Return ONLY JSON in this shape:
@@ -100,11 +111,11 @@ def fallback(cfg, facts, rng):
     }
 
 
-def make_pack(cfg, facts, rng, use_ai=True, avoid=None):
+def make_pack(cfg, facts, rng, use_ai=True, avoid=None, news=None):
     key = os.getenv("GEMINI_API_KEY")
     if use_ai and key:
         fx = "\n".join(f"- {f['text']} (source: {f['source']})" for f in facts["confirmed"])
-        prompt = PROMPT.format(tone=cfg["tone"], facts=fx, theme=rng.choice(THEMES), avoid="; ".join((avoid or [])[-30:]) or "none", schema=SCHEMA)
+        prompt = PROMPT.format(tone=cfg["tone"], facts=fx, theme=("today's news digest" if news else rng.choice(THEMES)), news=(_news_txt(news) if news else "(none today)"), handle=cfg["handle"], avoid="; ".join((avoid or [])[-30:]) or "none", schema=SCHEMA)
         try:
             c = _call(prompt, key)
             fb = fallback(cfg, facts, rng)
@@ -113,7 +124,17 @@ def make_pack(cfg, facts, rng, use_ai=True, avoid=None):
             return c, "written by Gemini from facts.json"
         except Exception as ex:
             print("AI copy failed, using the offline template:", ex, file=sys.stderr)
-    return fallback(cfg, facts, rng), "offline template (no GEMINI_API_KEY or AI failed)"
+    fb = fallback(cfg, facts, rng)
+    if news:
+        top = news[:3]
+        fb["posters"][1] = {"kind": "fact", "tag": "TODAY'S NEWS", "headline": "GTA 6 news today", "highlight": "News",
+                            "items": [(("" if n["official"] else "Reported: ") + n["title"])[:90] for n in top], "source": ", ".join(sorted({n["source"] for n in top}))[:60]}
+    return fb, "offline template (no GEMINI_API_KEY or AI failed)"
+
+
+def _news_txt(news):
+    from . import news as N
+    return N.as_prompt(news)
 
 
 def lines_used(c):
