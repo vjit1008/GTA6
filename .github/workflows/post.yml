@@ -1,0 +1,36 @@
+name: Make GTA pack
+on:
+  workflow_dispatch:
+    inputs:
+      voice: {description: "voice: auto/edge/gemini/none", default: "auto"}
+      offline: {description: "skip AI copy (true/false)", default: "false"}
+  schedule:
+    - cron: "30 3 * * *"   # every day 09:00 IST
+permissions:
+  contents: write
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SARVAM_API_KEY: ${{ secrets.SARVAM_API_KEY }}
+      ELEVEN_API_KEY: ${{ secrets.ELEVEN_API_KEY }}
+      ELEVEN_VOICE: ${{ secrets.ELEVEN_VOICE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - name: Make pack
+        run: |
+          ARGS="--voice ${{ github.event.inputs.voice || 'auto' }}"
+          if [ "${{ github.event.inputs.offline }}" = "true" ] || [ -z "$GEMINI_API_KEY" ]; then ARGS="$ARGS --offline"; fi
+          python make.py $ARGS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gta-pack
+          path: output/
+      - name: Save history (so lines never repeat)
+        run: |
+          git config user.name "pack-bot"; git config user.email "bot@users.noreply.github.com"
+          git add history.json && git commit -m "update history" && git push || true
