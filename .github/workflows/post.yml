@@ -20,8 +20,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
-      - run: pip install -r requirements.txt
+      - name: Find project folder (works even if files were uploaded inside a sub-folder)
+        run: |
+          D=$(dirname "$(find . -name make.py -not -path './.git/*' | head -1)")
+          echo "Project folder: $D"; echo "PROJ=$D" >> $GITHUB_ENV
+          ls -la "$D"
+      - run: pip install Pillow numpy scipy requests edge-tts imageio-ffmpeg
       - name: Make pack
+        working-directory: ${{ env.PROJ }}
         run: |
           ARGS="--voice ${{ github.event.inputs.voice || 'auto' }}"
           if [ "${{ github.event.inputs.offline }}" = "true" ] || [ -z "$GEMINI_API_KEY" ]; then ARGS="$ARGS --offline"; fi
@@ -29,8 +35,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: gta-pack
-          path: output/
+          path: ${{ env.PROJ }}/output/
       - name: Save history (so lines never repeat)
+        working-directory: ${{ env.PROJ }}
         run: |
           git config user.name "pack-bot"; git config user.email "bot@users.noreply.github.com"
           git add history.json && git commit -m "update history" && git push || true
