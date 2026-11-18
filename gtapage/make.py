@@ -8,7 +8,7 @@ import sys
 import time
 from pathlib import Path
 
-from kit import content, posters, reel, style
+from kit import content, news as N, posters, reel, style
 from kit.common import ROOT
 
 ap = argparse.ArgumentParser()
@@ -27,7 +27,8 @@ if pal not in style.PALETTES:
     sys.exit("palette must be one of: " + ", ".join(style.PALETTES))
 hist_f = ROOT / "history.json"
 hist = json.loads(hist_f.read_text()) if hist_f.exists() else []
-c, how = content.make_pack(cfg, facts, rng, not a.offline, hist)
+todays = N.fetch()
+c, how = content.make_pack(cfg, facts, rng, not a.offline, hist, todays)
 out = ROOT / "output" / f"pack_{seed}"
 if out.exists():
     shutil.rmtree(out)
@@ -41,7 +42,7 @@ for i, im in enumerate(posters.carousel(c["carousel"], style.Pal(pal), seed + 50
 info = "skipped"
 if not a.no_reel:
     try:
-        info = reel.build(c, h, pal, out / "reel.mp4", a.voice, seed)
+        info = reel.build(c, h, pal, out / "reel.mp4", a.voice, seed, lang=cfg.get("voice_lang", "hinglish"))
     except Exception as ex:
         info = f"FAILED: {ex}"
         print("Reel failed:", ex, file=sys.stderr)
