@@ -27,7 +27,7 @@ def _to_wav(src, dst):
     subprocess.run([FFMPEG, "-y", "-loglevel", "error", "-i", str(src), "-ar", "44100", "-ac", "1", str(dst)], check=True)
 
 
-def _voice(scenes, tmp, mode):
+def _voice(scenes, tmp, mode, lang="hinglish"):
     """returns list of wav paths (or None per scene) and the label of the voice used"""
     if mode == "none":
         return [None] * len(scenes), "no voice"
@@ -36,7 +36,7 @@ def _voice(scenes, tmp, mode):
     for i, s in enumerate(scenes):
         raw = tmp / f"v{i}.raw"
         try:
-            p, label = voice.speak(s.get("say") or s.get("title", ""), "english", raw, prov)
+            p, label = voice.speak(s.get("say") or s.get("title", ""), lang, raw, prov)
             f = next((x for x in tmp.glob(f"v{i}.*") if x.suffix != ".wav"), raw)
             wv = tmp / f"v{i}.wav"
             _to_wav(f, wv)
@@ -78,7 +78,7 @@ def _ease(t):
     return 1 - (1 - t) ** 3
 
 
-def build(copy, handle, palette, out_path, voice_mode="auto", seed=7, tmp=None):
+def build(copy, handle, palette, out_path, voice_mode="auto", seed=7, tmp=None, lang="hinglish"):
     """returns info string"""
     scenes = copy["reel"]["scenes"]
     n = len(scenes)
@@ -87,7 +87,7 @@ def build(copy, handle, palette, out_path, voice_mode="auto", seed=7, tmp=None):
     P = style.Pal(palette)
     rng = random.Random(seed)
     tf = rng.choice(TITLE_FONTS[:2])
-    wavs, vlabel = _voice(scenes, tmp, voice_mode)
+    wavs, vlabel = _voice(scenes, tmp, voice_mode, lang)
     durs = [(_wav_len(w) + PAD) if w else 3.4 for w in wavs]
     kinds = list(style.KINDS)
     rng.shuffle(kinds)
