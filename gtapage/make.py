@@ -52,6 +52,15 @@ for k, v in cap.items():
     txt += [f"--- {k.upper()} CAPTION ---", v, ""]
 txt += ["--- HASHTAGS (paste in first comment or caption, max 5-8 work best) ---", tags, "",
         "BEFORE POSTING: check every fact against facts.json sources. Keep the fan-page disclaimer. Do not add official trailer clips, screenshots, logos or music."]
+sched = []
+wins = [(8, 10.5), (11.5, 14), (16, 19), (20, 23)]       # IST windows; one post in each, random minute, so times differ daily
+fmts = ["Reel (reel.mp4)", "Carousel (carousel_01..06)", "Poster 1 or 3", "Poster 2 or 4"]
+rng.shuffle(fmts)
+for (a0, a1), fm in zip(wins, fmts):
+    m = int(rng.uniform(a0, a1) * 60)
+    sched.append(f"{m // 60:02d}:{m % 60:02d} IST  ->  {fm}")
+sched.sort()
+(out / "POST_SCHEDULE_TODAY.txt").write_text("Today's 4 posts (random times, different every day). Set a phone alarm for each.\n\n" + "\n".join(sched) + "\n\nTip: use Instagram's 'Schedule' option (Professional account, Create > Advanced settings) to schedule them in advance.\n", encoding="utf-8")
 (out / "captions_and_hashtags.txt").write_text("\n".join(txt), encoding="utf-8")
 hist_f.write_text(json.dumps((hist + content.lines_used(c))[-120:]))
 print(f"Done -> {out}\n{how}\nReel: {info}")
