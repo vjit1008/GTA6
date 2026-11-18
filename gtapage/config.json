@@ -1,9 +1,24 @@
 {
- "handle": "yourpage",
- "page_name": "YOUR PAGE NAME",
+ "handle": "gtagaming.world",
+ "page_name": "GTA Gaming world",
  "language": "Indian English",
  "tone": "hyped but smart, witty, short punchy lines, written for Indian gamers (college students and young working professionals)",
  "audience_note": "Indian console gamers and gaming-meme followers",
- "hashtags_base": ["#GTA6", "#GTAVI", "#GrandTheftAutoVI", "#GamingIndia", "#PS5", "#XboxSeriesX", "#GamerLife", "#Game", "#PS6", "#GTA7", "#GTAVII", "#GamingWorld"],
- "voice_gender": "M"
+ "hashtags_base": [
+  "#GTA6",
+  "#GTAVI",
+  "#GrandTheftAutoVI",
+  "#GamingIndia",
+  "#PS5",
+  "#XboxSeriesX",
+  "#GamerLife",
+  "#Gamingworld",
+  "#GTA7",
+  "#PS6",
+  "#GTA8",
+  "#GTAworld"
+ ],
+ "voice_gender": "M",
+ "voice_lang": "hinglish",
+ "voice_note": "hinglish = Hindi+English mix in Roman letters (spoken lines only). Use \"english\" for pure Indian English."
 }
