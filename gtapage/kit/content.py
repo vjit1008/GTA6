@@ -9,7 +9,7 @@ import time
 from .common import ROOT
 
 PROMPT = """You write Instagram content for an Indian gaming fan page about Grand Theft Auto VI (written as "GTA VI" or "GTA 6").
-PAGE TONE: {tone}. Language: natural Indian English (simple, spoken, no slang that only Americans use, no Hindi words unless the tone asks).
+PAGE TONE: {tone}. On-image text and captions: natural Indian English. ONLY the Reel 'say' lines are Hinglish (Roman letters, never Devanagari).
 CONFIRMED FACTS (the ONLY facts you may state as true):
 {facts}
 RULES
@@ -31,7 +31,7 @@ SCHEMA = """{
  "carousel":{"cover":{"tag":"2 words","headline":"max 8 words hook","highlight":"1-2 words"},
    "slides":[{"tag":"1-2 words","title":"max 5 words","highlight":"1-2 words","body":"max 22 words"},{"tag":"","title":"","highlight":"","body":""},{"tag":"","title":"","highlight":"","body":""},{"tag":"","title":"","highlight":"","body":""}],
    "cta":{"headline":"max 4 words","highlight":"1 word","body":"max 14 words, ask to save, share and follow"}},
- "reel":{"scenes":[{"tag":"2 words","title":"max 4 words","hl":"1 word from title","sub":"max 8 words","say":"one spoken sentence, 8-14 words, natural Indian English"},{"tag":"","title":"","hl":"","sub":"","say":""},{"tag":"","title":"","hl":"","sub":"","say":""},{"tag":"","title":"","hl":"","sub":"","say":""},{"tag":"","title":"","hl":"","sub":"","say":""},{"tag":"CTA","title":"","hl":"","sub":"","say":"spoken call to action: follow, save, share"}]},
+ "reel":{"scenes":[{"tag":"2 words","title":"max 4 words","hl":"1 word from title","sub":"max 8 words","say":"one spoken sentence, 8-14 words, natural Hinglish in Roman letters (Hindi+English mix like a young Indian creator talks, e.g. 'Yaar, pehle storage khaali kar lo')"},{"tag":"","title":"","hl":"","sub":"","say":""},{"tag":"","title":"","hl":"","sub":"","say":""},{"tag":"","title":"","hl":"","sub":"","say":""},{"tag":"","title":"","hl":"","sub":"","say":""},{"tag":"CTA","title":"","hl":"","sub":"","say":"spoken call to action in Hinglish: follow, save, share"}]},
  "captions":{"poster_1":"","poster_2":"","poster_3":"","poster_4":"","carousel":"","reel":""},
  "hashtags":["8 to 12 relevant hashtags, no #viral #fyp"]
 }"""
@@ -78,12 +78,12 @@ def fallback(cfg, facts, rng):
     q = rng.choice(quotes)
     items = ["Free up storage before you play", "Charge the controller. Twice.", "Mute spoiler keywords on every app", "Plan your snacks, not just your route", "Tell your squad the start time"]
     rng.shuffle(items)
-    scenes = [("LAUNCH DAY", "19 NOV 2026", "19", "Launch checklist", "It's launch day. Here is the checklist you actually need."),
-              ("STEP 1", "FREE UP SPACE", "SPACE", "Storage first, always", "First, free up storage. Nothing hurts more than a full drive."),
-              ("STEP 2", "CHARGE EVERYTHING", "CHARGE", "Controller, headset, phone", "Second, charge your controller and your headset. Twice."),
-              ("STEP 3", "MUTE THE SPOILERS", "MUTE", "Keywords off on every app", "Third, mute spoiler keywords on every app you use."),
-              ("STEP 4", "PICK YOUR SQUAD", "SQUAD", "Agree a start time", "Fourth, tell your squad the exact start time."),
-              ("CTA", "SAVE THIS", "SAVE", "Follow for daily updates", "Save this, send it to your squad, and follow for daily launch updates.")]
+    scenes = [("LAUNCH DAY", "19 NOV 2026", "19", "Launch checklist", "Yaar, launch day aa gaya! Ye checklist dekh lo, kaam aayegi."),
+              ("STEP 1", "FREE UP SPACE", "SPACE", "Storage first, always", "Sabse pehle storage khaali karo. Full drive se bura kuch nahi."),
+              ("STEP 2", "CHARGE EVERYTHING", "CHARGE", "Controller, headset, phone", "Dusra, controller aur headset full charge kar lo. Do baar."),
+              ("STEP 3", "MUTE THE SPOILERS", "MUTE", "Keywords off on every app", "Teesra, har app pe spoiler wale keywords mute kar do."),
+              ("STEP 4", "PICK YOUR SQUAD", "SQUAD", "Agree a start time", "Chautha, squad ko exact start time bata do."),
+              ("CTA", "SAVE THIS", "SAVE", "Follow for daily updates", "Ye save karo, squad ko bhejo, aur daily updates ke liye follow karo.")]
     return {
         "posters": [
             {"kind": "launch", "tag": "LAUNCH DAY", "headline": h, "highlight": hl(h), "date": "19 NOV 2026", "sub": "PS5  /  XBOX SERIES X|S", "cta": "Save this. Send it to your squad.", "cta2": "Follow for daily launch-week updates."},
