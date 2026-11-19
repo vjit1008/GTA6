@@ -21,7 +21,7 @@ STYLE = {
     "bengali": "natural spoken Bengali, warm friendly and lively; expressive, never robotic",
 }
 SARVAM_LANG = {"hinglish": "hi-IN", "hindi": "hi-IN", "english": "en-IN", "marathi": "mr-IN", "bengali": "bn-IN"}
-EDGE = {"english": ("en-IN-NeerjaNeural", "en-IN-PrabhatNeural"), "hinglish": ("hi-IN-SwaraNeural", "hi-IN-MadhurNeural"),
+EDGE = {"english": ("en-IN-NeerjaNeural", "en-IN-PrabhatNeural"), "hinglish": ("en-IN-NeerjaNeural", "en-IN-PrabhatNeural"),
         "hindi": ("hi-IN-SwaraNeural", "hi-IN-MadhurNeural"), "marathi": ("mr-IN-AarohiNeural", "mr-IN-ManoharNeural"),
         "bengali": ("bn-IN-TanishaaNeural", "bn-IN-BashkarNeural")}
 
@@ -155,8 +155,8 @@ def eleven(text, lang, out):
 def edge(text, lang, out):
     import edge_tts
     f, m = EDGE.get(lang, EDGE["english"])
-    v = os.getenv("EDGE_VOICE") or (m if GENDER == "M" else f)
-    asyncio.run(edge_tts.Communicate(text, v, rate="+6%").save(str(out)))
+    v = os.getenv("EDGE_VOICE") or (m if (os.getenv("VOICE_GENDER") or "F").upper()[:1] == "M" else f)
+    asyncio.run(edge_tts.Communicate(text, v, rate="+10%").save(str(out)))
     return "edge:" + v
 
 
