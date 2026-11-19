@@ -1,9 +1,25 @@
 {
  "_note": "Only put CONFIRMED facts here, each with an official source. The generator will not write any other fact. Update this file every week.",
  "confirmed": [
-  {"id": "date", "text": "Grand Theft Auto VI launches on 19 November 2026", "source": "Rockstar Games newswire", "url": "https://www.rockstargames.com/newswire/article/ak3ak31a49a221/grand-theft-auto-vi-is-now-set-to-launch-november-19-2026"},
-  {"id": "preload", "text": "Pre-load begins on 10 November 2026", "source": "Rockstar Games newswire", "url": "https://www.rockstargames.com/newswire/article/k4ak9okk485712/grand-theft-auto-vi-pre-load-begins-on-november-10"},
-  {"id": "platforms", "text": "It launches on PlayStation 5 and Xbox Series X|S", "source": "Rockstar Games newswire", "url": "https://www.rockstargames.com/newswire/article/k4ak9okk485712/grand-theft-auto-vi-pre-load-begins-on-november-10"}
+  {
+   "id": "date",
+   "text": "Grand Theft Auto VI launches on 19 November 2026",
+   "source": "Rockstar Games newswire",
+   "url": "https://www.rockstargames.com/newswire/article/ak3ak31a49a221/grand-theft-auto-vi-is-now-set-to-launch-november-19-2026"
+  },
+  {
+   "id": "preload",
+   "text": "Pre-load begins on 10 November 2026",
+   "source": "Rockstar Games newswire",
+   "url": "https://www.rockstargames.com/newswire/article/k4ak9okk485712/grand-theft-auto-vi-pre-load-begins-on-november-10"
+  },
+  {
+   "id": "platforms",
+   "text": "It launches on PlayStation 5 and Xbox Series X|S",
+   "source": "Rockstar Games newswire",
+   "url": "https://www.rockstargames.com/newswire/article/k4ak9okk485712/grand-theft-auto-vi-pre-load-begins-on-november-10"
+  }
  ],
- "rumours": []
+ "rumours": [],
+ "launch_date": "2026-11-19"
 }
