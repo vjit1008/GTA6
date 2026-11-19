@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from . import music, style, voice
-from .common import FFMPEG, df, pf
+from .common import FFMPEG, ROOT, df, pf
 from .posters import glass, rrect, tag, title, TITLE_FONTS
 
 RW, RH = 1080, 1920
@@ -129,9 +129,9 @@ def build(copy, handle, palette, out_path, voice_mode="auto", seed=7, tmp=None, 
         raise RuntimeError("ffmpeg video encode failed")
     # audio: voice clips placed at scene starts, beat underneath
     total = sum(durs)
-    music.track(total + 1, seed, tmp / "beat.wav")
+    mlabel = music.pick(total + 1, seed, tmp / "beat.wav", ROOT / "music", FFMPEG)
     ins = ["-i", str(tmp / "video.mp4"), "-i", str(tmp / "beat.wav")]
-    filt, mix_in, k, t0 = [], ["[1:a]volume=0.22[b]"], 2, 0.0
+    filt, mix_in, k, t0 = [], ["[1:a]volume=0.30[b]"], 2, 0.0
     labels = ["[b]"]
     for i, w in enumerate(wavs):
         if w:
@@ -144,4 +144,4 @@ def build(copy, handle, palette, out_path, voice_mode="auto", seed=7, tmp=None, 
     fc = ";".join(mix_in) + ";" + "".join(labels) + f"amix=inputs={len(labels)}:duration=first:normalize=0,alimiter=limit=0.95[a]"
     subprocess.run([FFMPEG, "-y", "-loglevel", "error", *ins, "-filter_complex", fc, "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-t", f"{total:.2f}", str(out_path)], check=True)
     shutil.rmtree(tmp, ignore_errors=True)
-    return f"{total:.0f}s Reel, voice: {vlabel}"
+    return f"{total:.0f}s Reel, voice: {vlabel}, music: {mlabel}"
