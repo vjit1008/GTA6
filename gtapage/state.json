@@ -1,0 +1,27 @@
+{
+ "history": [],
+ "news_seen": [],
+ "date": "2026-11-19",
+ "slots": [
+  {
+   "t": "08:59",
+   "fmt": "carousel",
+   "done": true
+  },
+  {
+   "t": "12:46",
+   "fmt": "reel",
+   "done": false
+  },
+  {
+   "t": "16:28",
+   "fmt": "poster",
+   "done": false
+  },
+  {
+   "t": "20:48",
+   "fmt": "poster",
+   "done": false
+  }
+ ]
+}
