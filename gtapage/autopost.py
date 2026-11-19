@@ -24,6 +24,8 @@ if a.diagnose:
     ig.diagnose()
     sys.exit(0)
 
+import os
+os.environ.setdefault("VOICE_GENDER", str(content.load_json("config.json").get("voice_gender", "M")))
 now = dt.datetime.now(IST)
 today = now.strftime("%Y-%m-%d")
 state = json.loads(ST.read_text()) if ST.exists() else {}
@@ -92,6 +94,8 @@ try:
 except ig.TokenError as ex:
     print("TOKEN/ACCOUNT PROBLEM:", ex, file=sys.stderr)
     sys.exit(3)
+(out / "caption_and_hashtags.txt").write_text(f"FORMAT: {fmt}\nCOPY: {how}\n\n--- CAPTION (posted exactly like this) ---\n{caption}\n", encoding="utf-8")
+print("Caption:\n" + caption)
 print("Posted media id:" if mid else "Dry run (not posted).", mid or "")
 if not a.dry_run:
     slot["done"] = True
