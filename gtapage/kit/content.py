@@ -10,6 +10,7 @@ from .common import ROOT
 
 PROMPT = """You write Instagram content for an Indian gaming fan page about Grand Theft Auto VI (written as "GTA VI" or "GTA 6").
 PAGE TONE: {tone}. On-image text and captions: natural Indian English. ONLY the Reel 'say' lines are Hinglish (Roman letters, never Devanagari).
+TODAY: {today} (IST). {status}
 CONFIRMED FACTS (the ONLY facts you may state as true):
 {facts}
 RULES
@@ -51,6 +52,26 @@ THEMES = ["launch-night checklist (practical, funny)", "spoiler-free survival gu
           "what is confirmed vs what is still unknown (honest, no rumours)", "how to grow a gaming page during launch week (honest creator tips)"]
 
 
+def _today():
+    import datetime as dt
+    now = dt.datetime.now(dt.timezone(dt.timedelta(hours=5, minutes=30)))
+    try:
+        ld = dt.date.fromisoformat(load_json("facts.json").get("launch_date", "2026-11-19"))
+    except Exception:
+        ld = dt.date(2026, 11, 19)
+    d = (ld - now.date()).days
+    txt = now.strftime("%A %d %B %Y")
+    if d > 0:
+        return txt, f"GTA VI launches in {d} day(s). Use countdown energy."
+    if d == 0:
+        return txt, "GTA VI LAUNCHES TODAY. Talk in present tense: it is out today / tonight. Never say 'coming soon' or 'launches on'. No pre-launch checklists that assume it is not out."
+    return txt, f"GTA VI has been out for {-d} day(s). Never use countdown or 'coming soon'. Talk about launch news and what media report; keep generic tips honest."
+
+
+def status_code():
+    return _today()[1].split()[0:3]
+
+
 def load_json(name):
     return json.loads((ROOT / name).read_text(encoding="utf-8"))
 
@@ -74,7 +95,62 @@ def _call(prompt, key):
     raise RuntimeError(last)
 
 
+ANGLES_TODAY = [
+    dict(h="It's out. Today.", q="Today is the day.", poll=("Day-one plan?", ["PLAY ALL NIGHT", "TAKE IT SLOW"], "plan"),
+         cover=("TODAY", "5 things to do in your first hour", "5"),
+         items=["Check your download is complete and updated", "Do not read spoilers: mute keywords", "Play with headphones for the full vibe", "Take breaks: drink water, stretch", "Screenshot nothing you will regret sharing"],
+         scenes=[("OUT TODAY", "GTA 6 IS OUT", "OUT", "19 Nov 2026", "Yaar, aaj GTA 6 launch ho gaya hai! Pehle ghante ki ye cheezein dekh lo."),
+                 ("TIP 1", "UPDATE FIRST", "UPDATE", "Check the download", "Sabse pehle download aur update complete hai ya nahi, check kar lo."),
+                 ("TIP 2", "MUTE SPOILERS", "MUTE", "Keywords off", "Spoilers se bachna hai to apne apps pe keywords mute kar do."),
+                 ("TIP 3", "USE HEADPHONES", "HEADPHONES", "Full vibe", "Headphones laga ke khelo, mazaa double ho jayega."),
+                 ("TIP 4", "TAKE BREAKS", "BREAKS", "Water and stretch", "Beech beech mein paani piyo, aur thoda stretch bhi kar lo."),
+                 ("CTA", "FOLLOW FOR MORE", "FOLLOW", "Daily GTA 6 updates", "Roz ki GTA 6 updates ke liye follow karo, aur comment mein batao, tum kya kar rahe ho.")]),
+    dict(h="Servers, snacks, squad.", q="No plans tonight.", poll=("Where are you playing?", ["PS5", "XBOX SERIES X|S"], "console"),
+         cover=("LAUNCH NIGHT", "Launch night survival kit", "Survival"),
+         items=["Snacks within arm's reach", "Phone on silent, notifications off", "Charge the controller before you start", "Tell family you are unavailable tonight", "Save your game often"],
+         scenes=[("LAUNCH NIGHT", "SURVIVAL KIT", "KIT", "For tonight", "Aaj raat GTA 6 hai, to ye survival kit ready rakho."),
+                 ("ITEM 1", "SNACKS READY", "SNACKS", "Arm's reach", "Snacks haath ke paas rakho, baar baar uthna nahi padega."),
+                 ("ITEM 2", "PHONE ON SILENT", "SILENT", "Notifications off", "Phone silent pe daal do, focus mein khelo."),
+                 ("ITEM 3", "CHARGE CONTROLLER", "CHARGE", "Before you start", "Controller full charge hai na? Check kar lo."),
+                 ("ITEM 4", "TELL YOUR FAMILY", "FAMILY", "You are busy tonight", "Ghar pe bata do, aaj raat tum busy ho."),
+                 ("CTA", "SAVE AND SHARE", "SAVE", "Follow for daily updates", "Ye save karo, dost ko bhejo, aur roz ki updates ke liye follow karo.")]),
+    dict(h="Rockstar delivered.", q="Worth the wait?", poll=("Worth the wait?", ["YES, 100%", "LET ME PLAY FIRST"], "wait"),
+         cover=("DEBATE", "Was it worth the long wait?", "wait"),
+         items=["Years of waiting, millions of fans", "Everyone has a different first plan", "Reviews will come in the days ahead", "Your opinion matters: tell us below", "Play first, judge later"],
+         scenes=[("TODAY", "WORTH THE WAIT?", "WAIT", "Tell us", "GTA 6 aa gaya! Sawaal ye hai, kya itna intezaar worth it tha?"),
+                 ("THE WAIT", "YEARS OF HYPE", "HYPE", "Millions of fans", "Saalon ka hype, aur lakhon fans ka intezaar."),
+                 ("THE PLAN", "EVERYONE DIFFERENT", "PLAN", "First thing you do", "Har kisi ka pehla plan alag hota hai."),
+                 ("THE VERDICT", "PLAY, THEN JUDGE", "JUDGE", "Reviews coming", "Pehle khelo, phir faisla karo."),
+                 ("YOUR TAKE", "COMMENT BELOW", "COMMENT", "Yes or not yet", "Comment mein batao, haan ya abhi nahi."),
+                 ("CTA", "FOLLOW US", "FOLLOW", "Daily GTA 6 news", "Roz ki GTA 6 news ke liye follow karo.")]),
+]
+
+
+def angle_pack(cfg, A, rng, today=True):
+    hl = lambda s: s.split()[0].strip(".,'?")
+    return {
+        "posters": [
+            {"kind": "launch", "tag": "OUT TODAY" if today else "OUT NOW", "headline": A["h"], "highlight": hl(A["h"]), "date": "19 NOV 2026", "sub": "PS5  /  XBOX SERIES X|S", "cta": "Save this. Send it to your squad.", "cta2": "Follow for daily GTA 6 updates."},
+            {"kind": "fact", "tag": "FIRST HOUR", "headline": A["cover"][1], "highlight": A["cover"][2], "items": A["items"][:3], "source": "Page tips (not official)"},
+            {"kind": "poll", "tag": "YOUR CALL", "headline": A["poll"][0], "highlight": A["poll"][2], "options": A["poll"][1], "cta": "Comment A or B. Tag your co-op partner."},
+            {"kind": "quote", "tag": "MOOD", "headline": A["q"], "highlight": hl(A["q"]), "sub": "Tag the friend who has been waiting for this."}],
+        "carousel": {"cover": {"tag": A["cover"][0], "headline": A["cover"][1], "highlight": A["cover"][2]},
+                     "slides": [{"tag": "TIP", "title": x[:34], "highlight": hl(x), "body": ""} for x in A["items"][:4]],
+                     "cta": {"headline": "Save this.", "highlight": "Save", "body": "Send it to your squad and follow for daily GTA 6 updates."}},
+        "reel": {"scenes": [{"tag": a, "title": b, "hl": c, "sub": d, "say": e} for a, b, c, d, e in A["scenes"]]},
+        "captions": {"poster_1": "It's out. What are you playing first? Tell us below.", "poster_2": "Save this for later.", "poster_3": "Pick one in the comments.", "poster_4": "Tag the friend.",
+                     "carousel": "Save this. Which tip do you need most?", "reel": "Which one will you do first? Comment below. Follow for daily GTA 6 updates."},
+        "hashtags": cfg["hashtags_base"]}
+
+
 def fallback(cfg, facts, rng):
+    code = _today()[1]
+    if code.startswith("GTA VI LAUNCHES TODAY") or code.startswith("GTA VI has been out"):
+        return angle_pack(cfg, rng.choice(ANGLES_TODAY), rng, code.startswith("GTA VI LAUNCHES"))
+    return fallback_before(cfg, facts, rng)
+
+
+def fallback_before(cfg, facts, rng):
     F = facts["confirmed"]
     date = next((f["text"] for f in F if f["id"] == "date"), "Launches 19 November 2026")
     pre = next((f["text"] for f in F if f["id"] == "preload"), "Pre-load is open")
@@ -113,9 +189,10 @@ def fallback(cfg, facts, rng):
 
 def make_pack(cfg, facts, rng, use_ai=True, avoid=None, news=None):
     key = os.getenv("GEMINI_API_KEY")
+    err = ""
     if use_ai and key:
         fx = "\n".join(f"- {f['text']} (source: {f['source']})" for f in facts["confirmed"])
-        prompt = PROMPT.format(tone=cfg["tone"], facts=fx, theme=("today's news digest" if news else rng.choice(THEMES)), news=(_news_txt(news) if news else "(none today)"), handle=cfg["handle"], avoid="; ".join((avoid or [])[-30:]) or "none", schema=SCHEMA)
+        prompt = PROMPT.format(tone=cfg["tone"], facts=fx, today=_today()[0], status=_today()[1], theme=("today's news digest" if news else rng.choice(THEMES)), news=(_news_txt(news) if news else "(none today)"), handle=cfg["handle"], avoid="; ".join((avoid or [])[-30:]) or "none", schema=SCHEMA)
         try:
             c = _call(prompt, key)
             fb = fallback(cfg, facts, rng)
@@ -124,12 +201,13 @@ def make_pack(cfg, facts, rng, use_ai=True, avoid=None, news=None):
             return c, "written by Gemini from facts.json"
         except Exception as ex:
             print("AI copy failed, using the offline template:", ex, file=sys.stderr)
+            err = str(ex)[:160]
     fb = fallback(cfg, facts, rng)
-    if news:
+    if news and _today()[1].startswith("GTA VI launches in"):
         top = news[:3]
         fb["posters"][1] = {"kind": "fact", "tag": "TODAY'S NEWS", "headline": "GTA 6 news today", "highlight": "News",
                             "items": [(("" if n["official"] else "Reported: ") + n["title"])[:90] for n in top], "source": ", ".join(sorted({n["source"] for n in top}))[:60]}
-    return fb, "offline template (no GEMINI_API_KEY or AI failed)"
+    return fb, "offline template (" + (err or "no GEMINI_API_KEY") + ")"
 
 
 def _news_txt(news):
