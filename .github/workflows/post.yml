@@ -2,7 +2,7 @@ name: GTA auto-post
 # Runs every 20 min between 07:30 and 23:30 IST. Each day it picks 4 random times and posts when one is due.
 on:
   schedule:
-    - cron: "*/20 2-17 * * *"
+    - cron: "7,27,47 2-17 * * *"
   workflow_dispatch:
     inputs:
       force:
