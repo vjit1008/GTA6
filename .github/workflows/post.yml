@@ -1,18 +1,38 @@
-name: Make GTA pack
+name: GTA auto-post
+# Runs every 20 min between 07:30 and 23:30 IST. Each day it picks 4 random times and posts when one is due.
 on:
+  schedule:
+    - cron: "*/20 2-17 * * *"
   workflow_dispatch:
     inputs:
-      voice: {description: "voice: auto/edge/gemini/none", default: "auto"}
-      offline: {description: "skip AI copy (true/false)", default: "false"}
-  schedule:
-    - cron: "30 3 * * *"   # every day 09:00 IST
+      force:
+        description: "Post this format NOW (empty = follow today's plan)"
+        type: choice
+        default: ""
+        options: ["", reel, carousel, poster]
+      dry_run:
+        description: "Make it but do NOT post (use for the first test)"
+        type: boolean
+        default: true
+      diagnose:
+        description: "Only check the Instagram token and quota"
+        type: boolean
+        default: false
+concurrency:
+  group: gta-post
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
-  make:
+  post:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_UPLOAD_PRESET: ${{ secrets.CLOUDINARY_UPLOAD_PRESET }}
       SARVAM_API_KEY: ${{ secrets.SARVAM_API_KEY }}
       ELEVEN_API_KEY: ${{ secrets.ELEVEN_API_KEY }}
       ELEVEN_VOICE: ${{ secrets.ELEVEN_VOICE }}
@@ -20,24 +40,35 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
-      - name: Find project folder (works even if files were uploaded inside a sub-folder)
+      - name: Find project folder
         run: |
-          D=$(dirname "$(find . -name make.py -not -path './.git/*' | head -1)")
-          echo "Project folder: $D"; echo "PROJ=$D" >> $GITHUB_ENV
-          ls -la "$D"
+          D=$(dirname "$(find . -name autopost.py -not -path './.git/*' | head -1)")
+          echo "PROJ=$D" >> $GITHUB_ENV; ls -la "$D"
       - run: pip install Pillow numpy scipy requests edge-tts imageio-ffmpeg
-      - name: Make pack
+      - name: Diagnose
+        if: ${{ inputs.diagnose }}
+        working-directory: ${{ env.PROJ }}
+        run: python autopost.py --diagnose
+      - name: Make and post
+        if: ${{ !inputs.diagnose }}
         working-directory: ${{ env.PROJ }}
         run: |
-          ARGS="--voice ${{ github.event.inputs.voice || 'auto' }}"
-          if [ "${{ github.event.inputs.offline }}" = "true" ] || [ -z "$GEMINI_API_KEY" ]; then ARGS="$ARGS --offline"; fi
-          python make.py $ARGS
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ -n "${{ inputs.force }}" ]; then ARGS="$ARGS --force ${{ inputs.force }}"; fi
+          python autopost.py $ARGS
+      - name: Save state
+        if: ${{ success() && !inputs.diagnose && inputs.dry_run != true }}
+        working-directory: ${{ env.PROJ }}
+        run: |
+          git config user.name "gta-bot"; git config user.email "gta-bot@users.noreply.github.com"
+          git add state.json
+          if git diff --cached --quiet; then echo "no change"; else
+            git commit -m "state"; git pull --rebase origin "${{ github.ref_name }}" || true; git push; fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: gta-pack
+          name: output
           path: ${{ env.PROJ }}/output/
-      - name: Save history (so lines never repeat)
-        working-directory: ${{ env.PROJ }}
-        run: |
-          git config user.name "pack-bot"; git config user.email "bot@users.noreply.github.com"
-          git add history.json && git commit -m "update history" && git push || true
+          retention-days: 7
+          if-no-files-found: ignore
